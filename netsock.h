@@ -30,6 +30,9 @@ typedef SOCKET socket_t;
 
 #endif
 
+int      netsock_start(void);
+int      netsock_end(void);
+
 socket_t netsock_connect_stream(const char *host, const char *service);
 socket_t netsock_connect_dgram(const char *host, const char *service);
 socket_t netsock_bind_stream(const char *service);

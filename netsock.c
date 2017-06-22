@@ -26,6 +26,40 @@
 #endif
 
 
+int
+netsock_start(void)
+{
+#if ( defined(_WIN32) || defined(_WIN64) )
+
+	WSADATA wsaData;
+	WORD wVersionRequested = MAKEWORD(2, 2);
+	int status = WSAStartup(wVersionRequested, &wsaData);
+	if (status != 0)	{
+		log_error("WSAStartup failed: %d\n", status);
+		return NETSOCK_ERROR;
+	}
+
+#endif
+
+	return 0;
+}
+
+
+int
+netsock_end(void)
+{
+#if ( defined(__unix) )
+
+	return 0;
+
+#elif ( defined(_WIN32) || defined(_WIN64) )
+
+	return WSACleanup();
+
+#endif
+}
+
+
 /**
  * Create a non blocking udp/tcp socket and connect it
  * @param host Address to connect to
@@ -63,11 +97,7 @@ netsock_connect(const char *host, const char *service,
 		netsock_close(fd);
 	}
 	freeaddrinfo(result);
-	if (rp == NULL) {
-		log_perror("connect");
-		return NETSOCK_INVALID;
-	}
-	return fd;
+	return (rp != NULL) ? fd : NETSOCK_INVALID;
 }
 
 
@@ -136,9 +166,7 @@ netsock_bind(const char *service, int flags, int family, int socktype, int proto
 		netsock_close(fd);
 	}
 	freeaddrinfo(result);
-	if (rp != NULL) return fd;
-	log_perror("bind");
-	return NETSOCK_INVALID;
+	return (rp != NULL) ? fd : NETSOCK_INVALID;
 }
 
 
@@ -213,11 +241,7 @@ netsock_set_timeout(socket_t socket, int timeout, int type)
 		.tv_sec = timeout / 1000,
 		.tv_usec = (timeout % 1000) * 1000
 	};
-	if (setsockopt(socket, SOL_SOCKET, type, (char *)&timeval, sizeof timeval) == NETSOCK_ERROR) {
-		log_perror("setsockopt");
-		return NETSOCK_ERROR;
-	}
-	return 0;
+	return setsockopt(socket, SOL_SOCKET, type, (char *)&timeval, sizeof timeval);
 }
 
 inline int
@@ -245,12 +269,10 @@ ssize_t
 netsock_read_dgram(socket_t socket, void *buf, size_t size)
 {
 	ssize_t read = recv(socket, buf, size, 0);
-	if (likely(read >= 0)) {
+	if (likely(read != NETSOCK_ERROR)) {
 		log_all("read dgram %d: %zd/%zdB", socket, read, size);
-		return read;
 	}
-	log_perror("recv (%d)", socket);
-	return -1;
+	return read;
 }
 
 
@@ -269,13 +291,10 @@ netsock_read_stream(socket_t socket, void *buf, size_t size)
 	size_t left = size;
 	do {
 		ssize_t read = recv(socket, buf, left, 0);
-		if (unlikely(read < 0)) {
-			log_perror("recv (%d)", socket);
-			return -1;
-		}
+		if (unlikely(read == NETSOCK_ERROR)) { return NETSOCK_ERROR; }
 		buf += read;
 		left -= read;
-	} while (left);
+	} while (left != 0);
 	log_all("read stream %d: %zdB", socket, size);
 	return size;
 }
@@ -297,13 +316,10 @@ netsock_write(socket_t socket, const void *buf, size_t size)
 	size_t left = size;
 	do {
 		ssize_t wrote = send(socket, buf, left, 0);
-		if (unlikely(wrote < 0)) {
-			log_perror("send (%d)", socket);
-			return -1;
-		}
+		if (unlikely(wrote == NETSOCK_ERROR)) { return NETSOCK_ERROR; }
 		buf += wrote;
 		left -= wrote;
-	} while (left);
+	} while (left != 0);
 	log_all("write %d: %zdB", socket, size);
 	return size;
 }

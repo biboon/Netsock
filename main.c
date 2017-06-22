@@ -11,6 +11,7 @@ int main(int argc, char *argv[])
 		log_fatal("Usage: %s <host> <port>", argv[0]);
 		return -1;
 	}
+	netsock_start();
 	socket_t socket = netsock_connect_stream(argv[1], argv[2]);
 	char buffer[32];
 	for (int i = 0; i < 12; ++i) {
@@ -19,5 +20,7 @@ int main(int argc, char *argv[])
 	}
 	netsock_shutdown(socket, NETSOCK_SHUT_RDWR);
 	netsock_close(socket);
+	netsock_end();
+	log_end();
 	return 0;
 }
