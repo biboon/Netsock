@@ -33,6 +33,7 @@ typedef SOCKET socket_t;
 #endif
 
 #define  netsock_shutdown(socket, how)  shutdown(socket, how)
+#define  netsock_accept(socket)         accept(socket, NULL, NULL)
 
 int      netsock_start(void);
 int      netsock_end(void);
@@ -40,7 +41,6 @@ int      netsock_end(void);
 socket_t netsock_connect_stream(const char *host, const char *service);
 socket_t netsock_connect_dgram(const char *host, const char *service);
 socket_t netsock_bind_stream(const char *service);
-socket_t netsock_accept(socket_t socket);
 
 int      netsock_set_timeout_recv(socket_t socket, int timeout);
 int      netsock_set_timeout_send(socket_t socket, int timeout);

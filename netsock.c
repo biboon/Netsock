@@ -208,19 +208,6 @@ netsock_bind_stream(const char *service)
 
 
 /**
- * Calls accept on the defined socket.
- * @param socket A socket bound and listening for connections
- * @return A new socket used to communicate with the new client
- */
-socket_t
-netsock_accept(socket_t socket)
-{
-	log_debug("Accepting new connection");
-	return accept(socket, NULL, NULL);
-}
-
-
-/**
  * Calls setsockopt on the defined socket to set a timeout value.
  * @param socket The socket file descriptor to apply the modification on
  * @param timeout The number of milliseconds to wait before timing out
