@@ -28,17 +28,13 @@
 int
 netsock_start(void)
 {
-#if ( defined(_WIN32) || defined(_WIN64) )
+#if ( defined(__unix) )
+	return 0;
+#elif ( defined(_WIN32) || defined(_WIN64) )
 	WSADATA wsaData;
 	WORD wVersionRequested = MAKEWORD(2, 2);
-	int status = WSAStartup(wVersionRequested, &wsaData);
-	if (status != 0) {
-		log_error("WSAStartup failed: %d\n", status);
-		return NETSOCK_ERROR;
-	}
+	return (WSAStartup(wVersionRequested, &wsaData) == 0) ? 0 : NETSOCK_ERROR;
 #endif
-
-	return 0;
 }
 
 
