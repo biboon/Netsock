@@ -26,36 +26,42 @@
 #endif
 
 
+/**
+ * Initializes the library and its underlying components
+ * @return 0 or NETSOCK_ERROR
+ */
 int
 netsock_start(void)
 {
-#if ( defined(_WIN32) || defined(_WIN64) )
+	log_debug("Starting netsock");
 
+#if ( defined(_WIN32) || defined(_WIN64) )
 	WSADATA wsaData;
 	WORD wVersionRequested = MAKEWORD(2, 2);
 	int status = WSAStartup(wVersionRequested, &wsaData);
-	if (status != 0)	{
+	if (status != 0) {
 		log_error("WSAStartup failed: %d\n", status);
 		return NETSOCK_ERROR;
 	}
-
 #endif
 
 	return 0;
 }
 
 
+/**
+ * Cleans up the library and its underlying components
+ * @return 0 or NETSOCK_ERROR
+ */
 int
 netsock_end(void)
 {
+	log_debug("Cleaning netsock");
+
 #if ( defined(__unix) )
-
 	return 0;
-
 #elif ( defined(_WIN32) || defined(_WIN64) )
-
 	return WSACleanup();
-
 #endif
 }
 
@@ -215,19 +221,6 @@ netsock_accept(socket_t socket)
 
 
 /**
- * Shuts down a socket.
- * @param socket A valid socket
- * @param how A value specifying how the socket should be shut down.
- * It can be one of NETSOCK_SHUT_RD, NETSOCK_SHUT_WR or NETSOCK_SHUT_RDWR.
- * @return Returns 0 or NETSOCK_ERROR on error.
- */
-int netsock_shutdown(socket_t socket, int how)
-{
-	return shutdown(socket, how);
-}
-
-
-/**
  * Calls setsockopt on the defined socket to set a timeout value.
  * @param socket The socket file descriptor to apply the modification on
  * @param timeout The number of milliseconds to wait before timing out
@@ -266,7 +259,7 @@ netsock_set_timeout_send(socket_t socket, int timeout)
  * @return Returns the amount of bytes read or -1 on error.
  */
 ssize_t
-netsock_read_dgram(socket_t socket, void *buf, size_t size)
+netsock_read_datagm(socket_t socket, void *buf, size_t size)
 {
 	ssize_t read = recv(socket, buf, size, 0);
 	if (likely(read != NETSOCK_ERROR)) {
