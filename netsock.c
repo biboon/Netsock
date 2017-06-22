@@ -3,16 +3,11 @@
 #include "log.h"
 
 #if ( defined(__unix) )
-#include <string.h>
-#include <unistd.h>
-#include <errno.h>
-
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
 
 #elif ( defined(_WIN32) || defined(_WIN64) )
-
 #include <ws2tcpip.h>
 
 #endif
@@ -23,7 +18,7 @@
 #else
 #define likely(x)       (x)
 #define unlikely(x)     (x)
-#endif
+#endif /* __GNUC__ */
 
 
 /**
@@ -33,8 +28,6 @@
 int
 netsock_start(void)
 {
-	log_debug("Starting netsock");
-
 #if ( defined(_WIN32) || defined(_WIN64) )
 	WSADATA wsaData;
 	WORD wVersionRequested = MAKEWORD(2, 2);
@@ -56,8 +49,6 @@ netsock_start(void)
 int
 netsock_end(void)
 {
-	log_debug("Cleaning netsock");
-
 #if ( defined(__unix) )
 	return 0;
 #elif ( defined(_WIN32) || defined(_WIN64) )
@@ -188,18 +179,18 @@ netsock_bind_stream(const char *service)
 		AF_INET, SOCK_STREAM, 0);
 	if (socket == NETSOCK_INVALID) return NETSOCK_INVALID;
 	/* Set SO_REUSEADDR option */
-	char opt = 1;
-	if (setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof opt) == NETSOCK_ERROR) {
+	int opt = 1;
+	if (setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof opt) == NETSOCK_ERROR) {
 		log_perror("setsockopt");
-		netsock_close(socket);
 		shutdown(socket, NETSOCK_SHUT_RDWR);
+		netsock_close(socket);
 		return NETSOCK_INVALID;
 	}
 	/* Listen for new connections */
 	if (NETSOCK_ERROR == listen(socket, 5)) {
 		log_perror("listen");
-		netsock_close(socket);
 		shutdown(socket, NETSOCK_SHUT_RDWR);
+		netsock_close(socket);
 		return NETSOCK_INVALID;
 	}
 	log_debug("Listening on port %s (socket: %d)", service, socket);
