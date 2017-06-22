@@ -1,19 +1,12 @@
-CC := x86_64-w64-mingw32-gcc
-CC := gcc
-TARGET := runner
+.PHONY: linux windows clean
 
-SOURCES := main.c log.c netsock.c
-OBJECTS := $(SOURCES:.c=.o)
+linux:
+	make -f Makefile.linux
 
-CFLAGS := -g -Wall -Wextra -std=c99 -D_DEFAULT_SOURCE
-LIB :=
-LDFLAGS :=
-
-$(TARGET): $(OBJECTS)
-	$(CC) $^ -o $@ $(LIB)
-
-%.o: %.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -c -o $@ $<
+windows:
+	make -f Makefile.windows
 
 clean:
-	rm -rf $(TARGET) $(OBJECTS)
+	make -f Makefile.linux clean
+	make -f Makefile.windows clean
+	
