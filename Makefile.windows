@@ -4,7 +4,7 @@ TARGET := runner
 SOURCES := main.c log.c netsock.c
 OBJECTS := $(SOURCES:.c=.o)
 
-CFLAGS := -g -Wall -Wextra -std=c99 -D_DEFAULT_SOURCE
+CFLAGS := -g -Wall -Wextra -std=c99 -D_DEFAULT_SOURCE -D_LOG_NO_COLOR
 LIB := -lws2_32
 LDFLAGS :=
 

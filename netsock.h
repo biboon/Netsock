@@ -1,7 +1,12 @@
-#ifndef __NETSOCK_H__
-#define __NETSOCK_H__
+#ifndef __NETSOCK_H
+#define __NETSOCK_H
+
+#include <stdlib.h>
 
 #if ( defined(__unix__) )
+
+#include <unistd.h>
+#include <sys/socket.h>
 
 typedef int socket_t;
 #define netsock_close(socket_t)  close(socket_t)
@@ -25,16 +30,17 @@ typedef SOCKET socket_t;
 
 #endif
 
-#include <stdlib.h>
-
 socket_t netsock_connect_stream(const char *host, const char *service);
 socket_t netsock_connect_dgram(const char *host, const char *service);
 socket_t netsock_bind_stream(const char *service);
 socket_t netsock_accept(socket_t socket);
+
+int      netsock_shutdown(socket_t socket, int how);
 int      netsock_set_timeout_recv(socket_t socket, int timeout);
 int      netsock_set_timeout_send(socket_t socket, int timeout);
+
 ssize_t  netsock_read_dgram(socket_t socket, void *buf, size_t size);
 ssize_t  netsock_read_stream(socket_t socket, void *buf, size_t size);
 ssize_t  netsock_write(socket_t socket, const void *buf, size_t size);
 
-#endif
+#endif /* __NETSOCK_H */

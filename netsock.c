@@ -187,6 +187,19 @@ netsock_accept(socket_t socket)
 
 
 /**
+ * Shuts down a socket.
+ * @param socket A valid socket
+ * @param how A value specifying how the socket should be shut down.
+ * It can be one of NETSOCK_SHUT_RD, NETSOCK_SHUT_WR or NETSOCK_SHUT_RDWR.
+ * @return Returns 0 or NETSOCK_ERROR on error.
+ */
+int netsock_shutdown(socket_t socket, int how)
+{
+	return shutdown(socket, how);
+}
+
+
+/**
  * Calls setsockopt on the defined socket to set a timeout value.
  * @param socket The socket file descriptor to apply the modification on
  * @param timeout The number of milliseconds to wait before timing out
