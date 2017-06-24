@@ -25,8 +25,7 @@
  * Initializes the library and its underlying components
  * @return 0 or NETSOCK_ERROR
  */
-int
-netsock_start(void)
+int netsock_start(void)
 {
 #if ( defined(__unix) )
 	return 0;
@@ -42,8 +41,7 @@ netsock_start(void)
  * Cleans up the library and its underlying components
  * @return 0 or NETSOCK_ERROR
  */
-int
-netsock_end(void)
+int netsock_end(void)
 {
 #if ( defined(__unix) )
 	return 0;
@@ -63,8 +61,7 @@ netsock_end(void)
  * @param protocol Flag for specifying either TCP or UDP
  * @return The file descriptor for using the socket or -1 if error
  */
-static socket_t
-netsock_connect(const char *host, const char *service,
+static socket_t netsock_connect(const char *host, const char *service,
 	int flags, int family, int socktype, int protocol)
 {
 	/* Get address info */
@@ -100,12 +97,9 @@ netsock_connect(const char *host, const char *service,
  * @param service Port to connect to
  * @return The file descriptor for reading and writing on the socket
  */
-socket_t
-netsock_connect_stream(const char *host, const char *service)
+socket_t netsock_connect_stream(const char *host, const char *service)
 {
-	return netsock_connect(host, service,
-		AI_NUMERICHOST,
-		AF_INET, SOCK_STREAM, 0);
+	return netsock_connect(host, service, AI_NUMERICHOST, AF_INET, SOCK_STREAM, 0);
 }
 
 
@@ -115,12 +109,9 @@ netsock_connect_stream(const char *host, const char *service)
  * @param service Port to connect to
  * @return The file descriptor for reading and writing on the socket
  */
-socket_t
-netsock_connect_dgram(const char *host, const char *service)
+socket_t netsock_connect_datagm(const char *host, const char *service)
 {
-	return netsock_connect(host, service,
-		AI_NUMERICHOST,
-		AF_INET, SOCK_DGRAM, 0);
+	return netsock_connect(host, service, AI_NUMERICHOST, AF_INET, SOCK_DGRAM, 0);
 }
 
 
@@ -133,8 +124,7 @@ netsock_connect_dgram(const char *host, const char *service)
  * @param protocol Flag for specifying either TCP or UDP
  * @return The file descriptor for reading and writing on the socket
  */
-static socket_t
-netsock_bind(const char *service, int flags, int family, int socktype, int protocol)
+static socket_t netsock_bind(const char *service, int flags, int family, int socktype, int protocol)
 {
 	/* Get address info */
 	const struct addrinfo hints = {
@@ -168,11 +158,9 @@ netsock_bind(const char *service, int flags, int family, int socktype, int proto
  * @param service Port to connect to
  * @return The file descriptor for reading and writing on the socket
  */
-socket_t
-netsock_bind_stream(const char *service)
+socket_t netsock_bind_stream(const char *service)
 {
-	socket_t socket = netsock_bind(service, AI_PASSIVE,
-		AF_INET, SOCK_STREAM, 0);
+	socket_t socket = netsock_bind(service, AI_PASSIVE, AF_INET, SOCK_STREAM, 0);
 	if (socket == NETSOCK_INVALID) return NETSOCK_INVALID;
 	/* Set SO_REUSEADDR option */
 	int opt = 1;
@@ -183,7 +171,7 @@ netsock_bind_stream(const char *service)
 		return NETSOCK_INVALID;
 	}
 	/* Listen for new connections */
-	if (NETSOCK_ERROR == listen(socket, 5)) {
+	if (listen(socket, 5) == NETSOCK_ERROR) {
 		log_perror("listen");
 		shutdown(socket, NETSOCK_SHUT_RDWR);
 		netsock_close(socket);
@@ -200,8 +188,7 @@ netsock_bind_stream(const char *service)
  * @param timeout The number of milliseconds to wait before timing out
  * @param type Timeout on receive or send direction
  */
-static int
-netsock_set_timeout(socket_t socket, int timeout, int type)
+static int netsock_set_timeout(socket_t socket, int timeout, int type)
 {
 	if (timeout < 0) return -1;
 	const struct timeval timeval = {
@@ -211,14 +198,12 @@ netsock_set_timeout(socket_t socket, int timeout, int type)
 	return setsockopt(socket, SOL_SOCKET, type, (char *)&timeval, sizeof timeval);
 }
 
-inline int
-netsock_set_timeout_recv(socket_t socket, int timeout)
+inline int netsock_set_timeout_recv(socket_t socket, int timeout)
 {
 	return netsock_set_timeout(socket, timeout, SO_RCVTIMEO);
 }
 
-inline int
-netsock_set_timeout_send(socket_t socket, int timeout)
+inline int netsock_set_timeout_send(socket_t socket, int timeout)
 {
 	return netsock_set_timeout(socket, timeout, SO_SNDTIMEO);
 }
@@ -232,8 +217,7 @@ netsock_set_timeout_send(socket_t socket, int timeout)
  * @param size The maximum amount of data to read
  * @return Returns the amount of bytes read or -1 on error.
  */
-ssize_t
-netsock_read_datagm(socket_t socket, void *buf, size_t size)
+ssize_t netsock_read_datagm(socket_t socket, void *buf, size_t size)
 {
 	ssize_t read = recv(socket, buf, size, 0);
 	if (likely(read != NETSOCK_ERROR)) {
@@ -252,8 +236,7 @@ netsock_read_datagm(socket_t socket, void *buf, size_t size)
  * @param size The amount of data to read
  * @return Returns the amount of bytes read or -1 if on error.
  */
-ssize_t
-netsock_read_stream(socket_t socket, void *buf, size_t size)
+ssize_t netsock_read_stream(socket_t socket, void *buf, size_t size)
 {
 	size_t left = size;
 	do {
@@ -277,8 +260,7 @@ netsock_read_stream(socket_t socket, void *buf, size_t size)
  * @param size The amount of data to write
  * @return Returns the amount of bytes written or -1 if an error occured during operation.
  */
-ssize_t
-netsock_write(socket_t socket, const void *buf, size_t size)
+ssize_t netsock_write(socket_t socket, const void *buf, size_t size)
 {
 	size_t left = size;
 	do {

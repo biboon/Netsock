@@ -39,7 +39,7 @@ int      netsock_start(void);
 int      netsock_end(void);
 
 socket_t netsock_connect_stream(const char *host, const char *service);
-socket_t netsock_connect_dgram(const char *host, const char *service);
+socket_t netsock_connect_datagm(const char *host, const char *service);
 socket_t netsock_bind_stream(const char *service);
 
 int      netsock_set_timeout_recv(socket_t socket, int timeout);
